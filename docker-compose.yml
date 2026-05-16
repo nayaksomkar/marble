@@ -1,0 +1,48 @@
+services:
+  app:
+    build: .
+    image: marble-app
+    container_name: marble-app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://marble_user:marble_password@postgres:5432/marble_db
+    volumes:
+      - marble_data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - marble_network
+
+  postgres:
+    image: postgres:15
+    container_name: marble-postgres
+    environment:
+      - POSTGRES_USER=marble_user
+      - POSTGRES_PASSWORD=marble_password
+      - POSTGRES_DB=marble_db
+    volumes:
+      - marble_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U marble_user -d marble_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - marble_network
+
+volumes:
+  marble_data:
+  marble_postgres_data:
+
+networks:
+  marble_network:
+    name: marble_default

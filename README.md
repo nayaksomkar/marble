@@ -26,6 +26,8 @@ A production‑grade research platform powered by **LangGraph**. Four specialize
 
 ## Quick Start
 
+### Local (SQLite — no setup)
+
 ```bash
 git clone https://github.com/nayaksomkar/marble.git
 cd marble
@@ -35,7 +37,22 @@ source venv/bin/activate
 
 pip install -r requirements.txt
 
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Visit: http://localhost:8000/docs
+
+### Docker (PostgreSQL — production)
+
+```bash
+git clone https://github.com/nayaksomkar/marble.git
+cd marble
+
+# Copy env and add your API keys
+cp .env.example .env
+# Edit .env with your GROQ_API_KEY and MISTRAL_API_KEY
+
+docker compose up -d
 ```
 
 Visit: http://localhost:8000/docs
