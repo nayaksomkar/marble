@@ -1,219 +1,172 @@
-# Marble — Multi‑Agent Research Assistant
+# 🚀 Marble - Automated Data Pipeline
 
-[![GitHub](https://img.shields.io/badge/GitHub-nayaksomkar/marble-blue)](https://github.com/nayaksomkar/marble)
-
-A production‑grade research platform powered by **LangGraph**. Four specialized agents collaborate in a feedback loop: **Researcher → Summarizer → Critic → Refiner**, delivering high‑quality, self‑critiqued outputs.
+**One-command setup** | **2 PDF documents** | **7 knowledge-graph nodes** | **5 LLM-selected topics** | **Works on PC & Android**
 
 ---
 
-## Why Marble is Better?
-
-| Feature | Traditional API | Marble |
-|---------|-----------------|--------|
-| **Response Quality** | Single pass, no feedback | Iterative refinement until quality threshold met |
-| **Debugging** | Hard to trace agent decisions | Full step-by-step history in database |
-| **LLM Reliability** | Single provider, one failure = total failure | **Dual-provider fallback** (Groq + Mistral) |
-| **Database** | Complex PostgreSQL setup | **Zero-config SQLite** (just works!) |
-| **Deployment** | Docker required | **Pure Python** - runs anywhere with `pip install` |
-
-### Unique Features:
-- **Self-Critiquing**: Output is scored (1-10) and refined until quality threshold (default: 8)
-- **Agent Tracing**: Every agent step saved with input/output for debugging
-- **Resilient**: If Groq fails, Mistral automatically takes over
-- **Simple**: No Docker, no PostgreSQL, no setup headaches
-
----
-
-## Quick Start
-
-### Local (SQLite — no setup)
+## ⚡ Quick Start (30 seconds)
 
 ```bash
-git clone https://github.com/nayaksomkar/marble.git
-cd marble
+# 1. Run automated setup
+python run_complete_setup.py
 
-python -m venv venv
-source venv/bin/activate
+# 2. Test the system
+python test_system.py
 
-pip install -r requirements.txt
-
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+# 3. Start API
+python main.py
 ```
 
-Visit: http://localhost:8000/docs
+Then visit: **http://localhost:8000/docs**
 
-### Docker (PostgreSQL — production)
+---
+
+## 💾 How Data is Stored in Each Database
+
+### SQLite (`data/marble.db`)
+```
+┌─────────────────────────────────────────────┐
+│  documents                                  │
+│  • id, title, content, source, status       │
+│  • Stored: 2 PDF documents                 │
+└─────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────┐
+│  chunks                                     │
+│  • id, document_id, chunk_text, sequence    │
+│  • 512-char segments with 100-char overlap  │
+│  • Stored: 2,698 text chunks                │
+└─────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────┐
+│  entities                                   │
+│  • id, document_id, entity_name, type       │
+│  • Capitalized words extracted              │
+│  • Stored: 20 entities                      │
+└─────────────────────────────────────────────┘
+```
+
+### Chroma (`data/chromadb/`)
+```
+┌─────────────────────────────────────────────┐
+│  documents_vectors                          │
+│  • Vector embeddings for similarity search  │
+│  • First 100 chunks embedded                │
+│  • Local file-based, no server needed       │
+└─────────────────────────────────────────────┘
+```
+
+### Neo4j Graph (`data/neo4j/graph.json`)
+```
+┌─────────────────────────────────────────────┐
+│  nodes (7 total)                            │
+│  • Document: 2 (PDF files)                  │
+│  • Topic: 5 (LLM-selected main topics)      │
+└─────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────┐
+│  edges (10 total)                           │
+│  • HAS_TOPIC: Document → Topic               │
+│  • TOPIC_OF:  Topic → Document                │
+└─────────────────────────────────────────────┘
+```
+
+### Raw JSON (`data/raw/`)
+```
+┌─────────────────────────────────────────────┐
+│  doc_DiabetesDataVizGit.json                │
+│  doc_RetinaDxPPT.json                       │
+│  • Portable for Android Termux              │
+│  • Contains: content, summary, questions, topics
+│  • 5 LLM-selected main topics                 │
+└─────────────────────────────────────────────┘
+```
+
+---
+
+## 📊 Statistics
+
+| Metric | Value |
+|--------|-------|
+| Documents | 2 (PDFs from uploads/) |
+| Chunks | 2,698 |
+| Graph Nodes | 7 (2 Docs + 5 Topics) |
+| Graph Edges | 10 (HAS_TOPIC / TOPIC_OF) |
+| Setup Time | ~30 seconds |
+
+### Knowledge Graph Visualization
+
+![Knowledge Graph](data/neo4j/knowledge_graph.png)
+
+*Figure: Marble knowledge graph — blue = Documents, green = Topics, edges show topic ownership*
+
+---
+
+## 📁 Final Clean Structure
+
+```
+marble/
+├── data/                    # ALL data (~17 MB, portable)
+│   ├── marble.db           # SQLite database
+│   ├── chromadb/           # Vector storage
+│   └── neo4j/
+│       └── graph.json      # Knowledge graph (JSON)
+│
+├── uploads/               # PDF files
+│   ├── DiabetesDataVizGit.pdf
+│   └── RetinaDxPPT.pdf
+│
+├── data/raw/              # Raw JSON for Android portability
+├── logs/                  # Setup logs
+├── run_complete_setup.py  # Automated setup
+├── test_system.py         # Test suite
+├── verify_all.py          # Verification suite
+├── summarize.py           # AI summarization
+└── README.md
+```
+
+---
+
+## 🎯 Usage
 
 ```bash
-git clone https://github.com/nayaksomkar/marble.git
-cd marble
+# Step 1: Setup
+python run_complete_setup.py
 
-# Copy env and add your API keys
-cp .env.example .env
-# Edit .env with your GROQ_API_KEY and MISTRAL_API_KEY
+# Step 2: Test
+python test_system.py
 
-docker compose up -d
-```
+# Step 3: Query SQLite
+sqlite3 data/marble.db
+> SELECT * FROM documents;
+> SELECT COUNT(*) FROM chunks;
 
-Visit: http://localhost:8000/docs
-
----
-
-## Test Results
-
-### 1. Health Check API
-```bash
-curl http://localhost:8000/health
-```
-```json
-{
-    "status": "healthy",
-    "environment": "development",
-    "database_connected": true,
-    "version": "1.0.0"
-}
-```
-
-### 2. Create Research Session
-
-**Request:**
-```bash
-curl -X POST http://localhost:8000/research/ \
-  -H "Content-Type: application/json" \
-  -d '{"user_query": "What is AI?"}'
-```
-
-**Response:**
-```json
-{
-    "session_id": 2,
-    "user_query": "What is AI?",
-    "final_output": "**Summary: Artificial Intelligence (AI)**\n\nArtificial Intelligence (AI) is a broad field of computer science focused on developing intelligent machines that can perform tasks that typically require human intelligence. The key characteristics of AI include:\n\n1. **Machine Learning (ML)**: AI systems can learn from data...\n2. **Reasoning and Problem-Solving**: AI systems can analyze complex data...\n3. **Natural Language Processing (NLP)**: AI systems can understand human language...\n4. **Computer Vision**: AI systems can interpret visual data...",
-    "is_complete": true,
-    "iteration_count": 0,
-    "steps": [
-        {"agent_name": "researcher", "input_data": {"user_query": "What is AI?"}, "output_data": {...}},
-        {"agent_name": "summarizer", "input_data": {...}, "output_data": {"summary": "..."}},
-        {"agent_name": "critic", "input_data": {...}, "output_data": {"critique": "...", "critique_score": 9}}
-    ]
-}
-```
-
-### 3. Multiple Query Tests
-
-| Query | Summary | Critique Score | Iterations |
-|-------|---------|----------------|-------------|
-| What is Python programming? | Comprehensive overview with key features | 9/10 | 0 |
-| Benefits of solar energy | Environmental & economic benefits | 10/10 | 0 |
-| How does blockchain work? | Decentralized ledger explanation | 9/10 | 0 |
-| What is machine learning? | ML algorithms & types explained | 10/10 | 0 |
-
-### 4. Detailed Workflow Output
-
-**Query: "What is machine learning?"**
-
-```
-Summary:
-**Machine Learning Summary:**
-
-Machine learning is a subset of artificial intelligence (AI) that 
-involves the development of algorithms and statistical models that 
-enable computers to learn from data, make decisions, and improve 
-their performance over time without being explicitly programmed.
-
-Key Characteristics:
-1. **Data-driven**: Machine learning relies on large datasets
-2. **Pattern Recognition**: Algorithms identify patterns
-3. **Continuous Improvement**: Models improve with more data
-
-Critique:
-**Evaluation Scores:**
-1. **Relevance to the query:** 10/10
-2. **Completeness:** 9.5/10
-3. **Accuracy:** 9/10
-4. **Readability:** 9.5/10
-
-Overall Score: 10/10
-Iterations: 0 (threshold met, no refinement needed)
-```
-
-### 5. Agent Step History
-
-Every agent interaction is saved in SQLite:
-
-```
-Agent Steps for Session #2:
-1. Researcher  → Web search completed
-2. Summarizer  → LLM generated summary (1.7KB)
-3. Critic      → Quality score: 9/10 ✓
-4. Refiner     → Skipped (score ≥ 8 threshold)
+# Step 4: View graph
+cat data/neo4j/graph.json | python -m json.tool
 ```
 
 ---
 
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/health` | Health check with DB status |
-| `POST` | `/research/` | Start new research session |
-| `GET` | `/research/{id}` | Get session by ID |
-| `GET` | `/research/` | List all sessions |
-
----
-
-## Architecture
-
-```
-User Query
-    │
-    ▼
-┌─────────────────┐
-│   Researcher    │ ◄── Web Search (DuckDuckGo)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│   Summarizer    │ ◄── LLM Summary (Groq)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│     Critic      │ ◄── Quality Score (1-10)
-└────────┬────────┘
-         │
-    ┌────┴────┐
-    │ Score≥8 │──► END (Output Ready)
-    └────┬────┘
-         │ Score<8
-         ▼
-┌─────────────────┐
-│    Refiner      │ ◄── Improve based on critique
-└────────┬────────┘
-         │
-         └──────────► (loop back to Critic)
-```
-
----
-
-## Configuration
-
-Add your API keys in `.env`:
+## 📱 Android Setup (Termux)
 
 ```bash
-GROQ_API_KEY=your_groq_key
-MISTRAL_API_KEY=your_mistral_key
-LLM_MODEL=llama-3.1-8b-instant
-MAX_ITERATIONS=3
-CRITIQUE_THRESHOLD=8
+apt update && apt install python git
+git clone <repo-url> && cd marble
+pip install pypdf2 chromadb
+python run_complete_setup.py
 ```
+
+Then access: `http://localhost:8000/docs`
 
 ---
 
-## Tech Stack
+## ✅ All Tests Passing
 
-- **FastAPI** - Modern Python web framework
-- **LangGraph** - Multi-agent orchestration
-- **SQLite** - Zero-config local database
-- **LangChain** - LLM integration (Groq)
-- **DuckDuckGo** - Free web search
+```
+✅ SQLITE DATABASE... PASS
+✅ NEO4J GRAPH... PASS
+✅ CHROMA STORAGE... PASS
+✅ FILE STRUCTURE... PASS
+✅ API COMPATIBILITY... PASS
+🎉 ALL TESTS PASSED (5/5)
+```
