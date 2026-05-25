@@ -1,0 +1,10 @@
+{
+  "RetinaDxGit": {
+    "file": "RetinaDxGit.txt",
+    "questions": "Here are 3 specific questions that a reader could ask about the document 'RetinaDxGit.txt' along with their answers:\n\n1. What was the highest overall accuracy achieved by any machine learning model in this project?\n\nAnswer: The highest overall accuracy was achieved by ResNet50, reaching 96.22%.\n\n2. Which classical machine learning algorithm achieved the highest accuracy level in this project?\n\nAnswer: The KNN algorithm achieved the highest accuracy level among classical machine learning algorithms, peaking at 84.95%.\n\n3. What is the primary benefit of using deep learning models for retinal disease detection, according to the document?\n\nAnswer: Deep learning models notably outperformed classical machine learning algorithms, with consistently higher precision, recall, specificity, and F1 scores, indicating their superior ability to correctly identify disease cases and reduce both false positives and false negatives."
+  },
+  "RetinaDxPPT": {
+    "file": "RetinaDxPPT.txt",
+    "questions": "Here are three specific questions that a reader could ask about this document's content:\n\n1. What are the main retinal diseases that the project is focusing on?\nAnswer: The main retinal diseases are Cataract, Diabetic Retinopathy, and Glaucoma.\n\n2. What type of images are used to train machine learning (ML) and deep learning (DL) models in this project?\nAnswer: The images used are fundus images, which are detailed photos of the back of the eye, including the retina, macula, and optic disc.\n\n3. What is the typical outcome of using deep learning models in medical image analysis, according to the literature review in this document?\nAnswer: According to the literature review, deep learning, especially CNNs, is highly effective in medical image analysis and often outperforms traditional machine learning in classification accuracy."
+  }
+}

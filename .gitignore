@@ -10,3 +10,10 @@ logs/
 .idea/
 .DS_Store
 Thumbs.db
+qa_results.json
+
+# Uploaded PDFs and extracted text files (from RetinaDx GitHub Assets)
+uploads/RetinaDxGit.pdf
+uploads/RetinaDxPPT.pdf
+uploads/RetinaDxGit.txt
+uploads/RetinaDxPPT.txt

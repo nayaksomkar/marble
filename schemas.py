@@ -1,33 +1,40 @@
-from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any, List
-from datetime import datetime
+"""
+Pydantic schemas for request/response validation.
+"""
+from pydantic import BaseModel
+from typing import Optional, List
 
 
 class ResearchRequest(BaseModel):
-    user_query: str = Field(..., min_length=1, max_length=5000)
+    query: str
+    provider: Optional[str] = None       # "groq" or "mistral"
+    model: Optional[str] = None
+    temperature: Optional[float] = None
 
 
 class ResearchResponse(BaseModel):
     session_id: int
-    user_query: str
-    final_output: str = ""
-    is_complete: bool = False
-    iteration_count: int = 0
-    created_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-    steps: List[Dict[str, Any]] = []
+    query: str
+    output: str
+    provider: str
+    model: str
 
 
-class AgentStepCreate(BaseModel):
-    session_id: int
-    agent_name: str
-    input_data: Optional[Dict[str, Any]] = None
-    output_data: Optional[Dict[str, Any]] = None
-    extra_data: Optional[Dict[str, Any]] = None
+class SessionSummary(BaseModel):
+    id: int
+    query: str
+    complete: bool
 
 
-class HealthCheck(BaseModel):
-    status: str
-    environment: str
-    database_connected: bool
-    version: str
+class SessionDetail(BaseModel):
+    id: int
+    query: str
+    output: Optional[str]
+    steps: List[dict]
+
+
+class UploadResponse(BaseModel):
+    id: int
+    filename: str
+    size: int
+    preview: str
